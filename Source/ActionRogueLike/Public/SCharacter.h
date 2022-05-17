@@ -14,27 +14,35 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(EditAnywhere, Category = Projectile)
+	TSubclassOf<AActor> ProjectileClass;
+	
 public:
-	// Sets default values for this character's properties
 	ASCharacter();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+	UCharacterMovementComponent* CharacterMovementComponent = nullptr;
+	
 	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArmComp = nullptr;
+	USpringArmComponent* SpringArmComponent = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* CameraComp = nullptr;
+	UCameraComponent* CameraComponent = nullptr;
 
 	void MoveForward(float Value);
+	void MoveRight(float Value);
+	
+	void PrimaryAttack();
+	
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 };
+
+
