@@ -72,7 +72,14 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
 
-	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+	DECLARE_DELEGATE_ThreeParams(FAttackDelegate, UAnimMontage*, float, TSubclassOf<AActor>);
+	
+	PlayerInputComponent->BindAction<FAttackDelegate>("PrimaryAttack", IE_Pressed, this, &ASCharacter::SpawnProjectile,
+		AttackMontage, PrimaryAttackTimerDelay, PrimaryProjectileClass);
+	
+	PlayerInputComponent->BindAction<FAttackDelegate>("SecondaryAttack", IE_Pressed, this, &ASCharacter::SpawnProjectile,
+		AttackMontage, SecondaryAttackTimerDelay, SecondaryProjectileClass);
+	
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 }
 
@@ -96,14 +103,15 @@ void ASCharacter::MoveRight(float Value)
 	AddMovementInput(ControlRightVector, Value);
 }
 
-void ASCharacter::PrimaryAttack()
+void ASCharacter::SpawnProjectile(UAnimMontage* AnimMontageToPlay, float AttackTimerDelay, TSubclassOf<AActor> ProjectileClass)
 {
-	PlayAnimMontage(AttackMontage);
+	PlayAnimMontage(AnimMontageToPlay);
 	
-	GetWorldTimerManager().SetTimer(PrimaryAttackTimerHandle, this, &ASCharacter::OnPrimaryAttackTimerElapsed, AttackTimerDelay);
+	FTimerDelegate AttackTimerDelegate = FTimerDelegate::CreateUObject( this, &ASCharacter::OnAttackTimerElapsed, ProjectileClass);
+	GetWorldTimerManager().SetTimer( AttackTimerHandle, AttackTimerDelegate, AttackTimerDelay, false );
 }
 
-void ASCharacter::OnPrimaryAttackTimerElapsed()
+void ASCharacter::OnAttackTimerElapsed(TSubclassOf<AActor> ProjectileClass)
 {
 	FVector ScreenCenterInWorldSpace, WorldDirection;
 	FVector2D ViewportSize;

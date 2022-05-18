@@ -18,19 +18,24 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 	
 protected:
 	UPROPERTY(EditAnywhere, Category = Attack)
-	TSubclassOf<AActor> ProjectileClass;
+	TSubclassOf<AActor> PrimaryProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = Attack)
+	TSubclassOf<AActor> SecondaryProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
 	UAnimMontage* AttackMontage;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
-	float AttackTimerDelay = 0.2f;
+	float PrimaryAttackTimerDelay = 0.2f;
+
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float SecondaryAttackTimerDelay = 0.5f;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float ProjectileTraceMultiplier = 1000.f;
 
-	FTimerHandle PrimaryAttackTimerHandle;
-	
+	FTimerHandle AttackTimerHandle;
 public:
 	ASCharacter();
 
@@ -52,10 +57,10 @@ protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	
-	void PrimaryAttack();
+	void SpawnProjectile(UAnimMontage* AnimMontageToPlay, float AttackTimerDelay, TSubclassOf<AActor> ProjectileClass);
 	void PrimaryInteract();
 	
-	void OnPrimaryAttackTimerElapsed();
+	void OnAttackTimerElapsed(TSubclassOf<AActor> ProjectileClass);
 
 public:	
 	virtual void Tick(float DeltaTime) override;

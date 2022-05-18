@@ -28,7 +28,6 @@ ASMagicProjectile::ASMagicProjectile()
 void ASMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ASMagicProjectile::Tick(float DeltaTime)
