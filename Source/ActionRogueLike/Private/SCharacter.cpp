@@ -8,6 +8,9 @@
 #include "DrawDebugHelpers.h"
 #include "SInteractionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/GameUserSettings.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ASCharacter::ASCharacter()
 {
@@ -102,13 +105,41 @@ void ASCharacter::PrimaryAttack()
 
 void ASCharacter::OnPrimaryAttackTimerElapsed()
 {
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FTransform SpawnTransform = FTransform(GetControlRotation(), HandLocation);
+	FVector ScreenCenterInWorldSpace, WorldDirection;
+	FVector2D ViewportSize;
+	
+	UGameViewportClient* GameViewportClient = GetWorld()->GetGameViewport();
+	GameViewportClient->GetViewportSize(ViewportSize);
+
+	APlayerController* PlayerController	= Cast<APlayerController>(GetController());
+	PlayerController->DeprojectScreenPositionToWorld(ViewportSize.X * 0.5, ViewportSize.Y * 0.5, ScreenCenterInWorldSpace, WorldDirection);
+	
+	const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+	const FVector LineTraceEndLocation = ScreenCenterInWorldSpace + (GetControlRotation().Vector() * ProjectileTraceMultiplier);
+
+	FHitResult Hit;
+	
+	FCollisionObjectQueryParams CollisionObjectQueryParams;
+	CollisionObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	CollisionObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+
+	const bool bHasLineTraceHittedSomething = GetWorld()->LineTraceSingleByObjectType(Hit, HandLocation, LineTraceEndLocation, CollisionObjectQueryParams);
+	//DrawDebugLine(GetWorld(), HandLocation, LineTraceEndLocation, FColor::Red, false, 5.f, 0, 2.f);
+
+	FVector HitLocation = LineTraceEndLocation;
+
+	if (bHasLineTraceHittedSomething)
+	{
+		HitLocation = Hit.ImpactPoint;
+	}
+	
+	const FRotator SpawnRotation = FRotationMatrix::MakeFromX(HitLocation - HandLocation).Rotator();
 
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParameters.Instigator = this;
 	
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTransform, SpawnParameters);
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, FTransform(SpawnRotation, HandLocation), SpawnParameters);
 }
 
 void ASCharacter::PrimaryInteract()

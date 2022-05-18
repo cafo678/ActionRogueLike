@@ -26,6 +26,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Attack)
 	float AttackTimerDelay = 0.2f;
 
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float ProjectileTraceMultiplier = 1000.f;
+
 	FTimerHandle PrimaryAttackTimerHandle;
 	
 public:
