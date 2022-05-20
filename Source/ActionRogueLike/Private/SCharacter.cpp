@@ -11,6 +11,7 @@
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SAttributeComponent.h"
 
 ASCharacter::ASCharacter()
 {
@@ -28,13 +29,21 @@ ASCharacter::ASCharacter()
 
 	InteractionComponent = CreateDefaultSubobject<USInteractionComponent>("InteractionComponent");
 
+	AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("AttributeComponent");
+
 	bUseControllerRotationYaw = false;
 }
 
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+}
+
+void ASCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	AttributeComponent->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
 void ASCharacter::Tick(float DeltaTime)
@@ -146,8 +155,20 @@ void ASCharacter::OnAttackTimerElapsed(TSubclassOf<AActor> ProjectileClass)
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParameters.Instigator = this;
-	
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, FTransform(SpawnRotation, HandLocation), SpawnParameters);
+
+	if (ensureAlways(ProjectileClass))
+	{
+		GetWorld()->SpawnActor<AActor>(ProjectileClass, FTransform(SpawnRotation, HandLocation), SpawnParameters);
+	}
+}
+
+void ASCharacter::OnHealthChanged(AActor* ActorInstigator, USAttributeComponent* OwningComponent, float NewHealth, float Delta)
+{
+	if (NewHealth <= 0.f && Delta < 0.f)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(GetController());
+		DisableInput(PlayerController);
+	}
 }
 
 void ASCharacter::PrimaryInteract()

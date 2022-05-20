@@ -9,7 +9,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class USInteractionComponent;
-
+class USAttributeComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
@@ -41,18 +41,22 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
 	
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovementComponent = nullptr;
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USpringArmComponent* SpringArmComponent = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UCameraComponent* CameraComponent = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USInteractionComponent* InteractionComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USAttributeComponent* AttributeComponent = nullptr;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -62,9 +66,11 @@ protected:
 	
 	void OnAttackTimerElapsed(TSubclassOf<AActor> ProjectileClass);
 
+	UFUNCTION()
+	void OnHealthChanged(AActor* ActorInstigator, USAttributeComponent* OwningComponent, float NewHealth, float Delta);
+
 public:	
 	virtual void Tick(float DeltaTime) override;
-	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };
 

@@ -3,6 +3,7 @@
 
 #include "SMagicProjectile.h"
 
+#include "SAttributeComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -25,6 +26,13 @@ ASMagicProjectile::ASMagicProjectile()
 	ProjectileMovementComponent->bInitialVelocityInLocalSpace = true;
 }
 
+void ASMagicProjectile::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
+}
+
 void ASMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
@@ -34,5 +42,21 @@ void ASMagicProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != GetInstigator())
+	{
+		USAttributeComponent* OtherAttributeComponent = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+
+		if (OtherAttributeComponent)
+		{
+			OtherAttributeComponent->ApplyHealthChange(DeltaDamage);
+
+			Destroy();
+		}
+	}
 }
 

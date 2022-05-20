@@ -20,6 +20,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float DeltaDamage = 50.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USphereComponent* SphereComponent = nullptr;
@@ -32,5 +36,10 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	UFUNCTION()
+	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 };
