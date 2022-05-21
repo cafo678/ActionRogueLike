@@ -4,8 +4,10 @@
 #include "SMagicProjectile.h"
 
 #include "SAttributeComponent.h"
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
 ASMagicProjectile::ASMagicProjectile()
@@ -24,6 +26,9 @@ ASMagicProjectile::ASMagicProjectile()
 	ProjectileMovementComponent->InitialSpeed = 1000.f;
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->bInitialVelocityInLocalSpace = true;
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComponent");
+	AudioComponent->SetupAttachment(SphereComponent);
 }
 
 void ASMagicProjectile::PostInitializeComponents()
@@ -53,6 +58,9 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 
 		if (OtherAttributeComponent)
 		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation(), GetActorRotation(),
+				1.f, 1.f, 0.f, GenericAttenuation);
+			
 			OtherAttributeComponent->ApplyHealthChange(DeltaDamage);
 
 			Destroy();

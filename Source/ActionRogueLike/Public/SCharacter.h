@@ -27,13 +27,13 @@ protected:
 	UAnimMontage* AttackMontage;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
-	float PrimaryAttackTimerDelay = 0.2f;
+	float PrimaryAttackTimerDelay;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
-	float SecondaryAttackTimerDelay = 0.5f;
+	float SecondaryAttackTimerDelay;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
-	float ProjectileTraceMultiplier = 1000.f;
+	float ProjectileTraceMultiplier;
 
 	FTimerHandle AttackTimerHandle;
 public:

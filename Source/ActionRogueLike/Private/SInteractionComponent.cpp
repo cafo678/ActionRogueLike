@@ -42,7 +42,8 @@ void USInteractionComponent::PrimaryInteract()
 	{
 		if (HitActor->Implements<USGameplayInterface>())
 		{
-			ISGameplayInterface::Execute_Interact(HitActor, Cast<APawn>(Owner));
+			ISGameplayInterface* HitActorWithInterface = Cast<ISGameplayInterface>(HitActor);
+			ISGameplayInterface::Execute_Interact(HitActor, HitActorWithInterface->GetIsInteractable(), Cast<APawn>(Owner));
 		}
 	}
 

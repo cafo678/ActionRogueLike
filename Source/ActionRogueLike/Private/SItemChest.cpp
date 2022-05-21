@@ -28,7 +28,12 @@ void ASItemChest::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)
+void ASItemChest::Interact_Implementation(bool bCanInteract, APawn* InstigatorPawn)
 {
+}
+
+bool ASItemChest::GetIsInteractable()
+{
+	return bIsInteractable;
 }
 

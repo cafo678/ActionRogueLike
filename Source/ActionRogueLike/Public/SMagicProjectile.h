@@ -9,6 +9,9 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UParticleSystemComponent;
+class UAudioComponent;
+class USoundAttenuation;
+class USoundBase;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASMagicProjectile : public AActor
@@ -23,7 +26,7 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float DeltaDamage = 50.f;
+	float DeltaDamage;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USphereComponent* SphereComponent = nullptr;
@@ -33,6 +36,15 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UParticleSystemComponent* ParticleSystemComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UAudioComponent* AudioComponent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USoundAttenuation* GenericAttenuation = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USoundBase* ImpactSound = nullptr;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
