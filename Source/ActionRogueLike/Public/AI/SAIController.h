@@ -6,12 +6,16 @@
 #include "AIController.h"
 #include "SAIController.generated.h"
 
-/**
- * 
- */
+class UBehaviorTree;
+
 UCLASS()
 class ACTIONROGUELIKE_API ASAIController : public AAIController
 {
 	GENERATED_BODY()
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	UBehaviorTree* BehaviorTree = nullptr;
 	
+	virtual void BeginPlay() override;
 };

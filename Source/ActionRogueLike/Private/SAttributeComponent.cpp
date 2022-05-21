@@ -14,10 +14,14 @@ bool USAttributeComponent::IsAlive() const
 
 bool USAttributeComponent::ApplyHealthChange(float Delta)
 {
-	Health = FMath::Clamp(Health += Delta, 0.f, MaxHealth);
+	float PreviousHealth = Health;
+	
+	Health = FMath::Clamp(Health + Delta, 0.f, MaxHealth);
+
+	float ActualDelta = Health - PreviousHealth;
 
 	OnHealthChanged.Broadcast(GetOwner(), this, Health, Delta);
 
-	return true;
+	return ActualDelta != 0.f;
 }
 
