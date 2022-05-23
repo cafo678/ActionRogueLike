@@ -7,9 +7,6 @@
 #include "BehaviorTree/BTTaskNode.h"
 #include "SBTTaskNode_RangedAttack.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class ACTIONROGUELIKE_API USBTTaskNode_RangedAttack : public UBTTaskNode
 {
