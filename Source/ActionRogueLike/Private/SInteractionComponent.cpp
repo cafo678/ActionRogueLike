@@ -3,6 +3,7 @@
 
 #include "SInteractionComponent.h"
 
+#include "SGameplayFunctionLibrary.h"
 #include "SGameplayInterface.h"
 
 USInteractionComponent::USInteractionComponent()
@@ -46,7 +47,10 @@ void USInteractionComponent::PrimaryInteract()
 		}
 	}
 
-	FColor DebugLineColor = bHasLineTraceHittedSomething ? FColor::Green : FColor::Red;
-	DrawDebugLine(GetWorld(), OwnerEyeLocation, LineTraceEndLocation, DebugLineColor, false, 2.f, 0, 2.f);
+	if (CVarDrawDebug.GetValueOnGameThread())
+	{
+		FColor DebugLineColor = bHasLineTraceHittedSomething ? FColor::Green : FColor::Red;
+		DrawDebugLine(GetWorld(), OwnerEyeLocation, LineTraceEndLocation, DebugLineColor, false, 2.f, 0, 2.f);
+	}
 }
 

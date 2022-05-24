@@ -19,3 +19,5 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	static bool ApplyDirectionalDamage(AActor* DamageCauser, AActor* TargetActor, float DeltaDamage, const FHitResult& HitResult);
 };
+
+static TAutoConsoleVariable<bool> CVarDrawDebug(TEXT("su.DrawDebug"), false, TEXT("Enable various debug linetraces"), ECVF_Cheat);

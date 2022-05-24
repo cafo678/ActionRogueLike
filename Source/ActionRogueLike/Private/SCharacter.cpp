@@ -6,12 +6,14 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
+#include "SActionComponent.h"
 #include "SInteractionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SAttributeComponent.h"
+#include "SGameplayFunctionLibrary.h"
 
 ASCharacter::ASCharacter()
 {
@@ -30,6 +32,8 @@ ASCharacter::ASCharacter()
 	InteractionComponent = CreateDefaultSubobject<USInteractionComponent>("InteractionComponent");
 
 	AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("AttributeComponent");
+	
+	ActionComponent = CreateDefaultSubobject<USActionComponent>("ActionComponent");
 
 	bUseControllerRotationYaw = false;
 }
@@ -49,24 +53,28 @@ void ASCharacter::PostInitializeComponents()
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (CVarDrawDebug.GetValueOnGameThread())
+	{
+		// This is entirely optional, it draws two arrows to visualize rotations of the player
+
+		// -- Rotation Visualization -- //
+		const float DrawScale = 100.0f;
+		const float Thickness = 5.0f;
+
+		FVector LineStart = GetActorLocation();
+		// Offset to the right of pawn
+		LineStart += GetActorRightVector() * 100.0f;
+		// Set line end in direction of the actor's forward
+		FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 100.0f);
 	
-	// This is entirely optional, it draws two arrows to visualize rotations of the player
+		// Draw Actor's Direction
+		DrawDebugDirectionalArrow(GetWorld(), LineStart, ActorDirection_LineEnd, DrawScale, FColor::Yellow, false, 0.0f, 0, Thickness);
 
-	// -- Rotation Visualization -- //
-	const float DrawScale = 100.0f;
-	const float Thickness = 5.0f;
-
-	FVector LineStart = GetActorLocation();
-	// Offset to the right of pawn
-	LineStart += GetActorRightVector() * 100.0f;
-	// Set line end in direction of the actor's forward
-	FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector() * 100.0f);
-	// Draw Actor's Direction
-	DrawDebugDirectionalArrow(GetWorld(), LineStart, ActorDirection_LineEnd, DrawScale, FColor::Yellow, false, 0.0f, 0, Thickness);
-
-	FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 100.0f);
-	// Draw 'Controller' Rotation ('PlayerController' that 'possessed' this character)
-	DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.0f, 0, Thickness);
+		FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector() * 100.0f);
+		// Draw 'Controller' Rotation ('PlayerController' that 'possessed' this character)
+		DrawDebugDirectionalArrow(GetWorld(), LineStart, ControllerDirection_LineEnd, DrawScale, FColor::Green, false, 0.0f, 0, Thickness);
+	}
 }
 
 void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -79,16 +87,14 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("Turn", this, &ASCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &ASCharacter::AddControllerPitchInput);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
 
-	DECLARE_DELEGATE_ThreeParams(FAttackDelegate, UAnimMontage*, float, TSubclassOf<AActor>);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
 	
-	PlayerInputComponent->BindAction<FAttackDelegate>("PrimaryAttack", IE_Pressed, this, &ASCharacter::SpawnProjectile,
-		AttackMontage, PrimaryAttackTimerDelay, PrimaryProjectileClass);
-	
-	PlayerInputComponent->BindAction<FAttackDelegate>("SecondaryAttack", IE_Pressed, this, &ASCharacter::SpawnProjectile,
-		AttackMontage, SecondaryAttackTimerDelay, SecondaryProjectileClass);
-	
+	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("SecondaryAttack", IE_Pressed, this, &ASCharacter::SecondaryAttack);
+
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 }
 
@@ -112,54 +118,24 @@ void ASCharacter::MoveRight(float Value)
 	AddMovementInput(ControlRightVector, Value);
 }
 
-void ASCharacter::SpawnProjectile(UAnimMontage* AnimMontageToPlay, float AttackTimerDelay, TSubclassOf<AActor> ProjectileClass)
+void ASCharacter::SprintStart()
 {
-	PlayAnimMontage(AnimMontageToPlay);
-	
-	FTimerDelegate AttackTimerDelegate = FTimerDelegate::CreateUObject( this, &ASCharacter::OnAttackTimerElapsed, ProjectileClass);
-	GetWorldTimerManager().SetTimer( AttackTimerHandle, AttackTimerDelegate, AttackTimerDelay, false );
+	ActionComponent->StartActionByName(this, "Sprint");
 }
 
-void ASCharacter::OnAttackTimerElapsed(TSubclassOf<AActor> ProjectileClass)
+void ASCharacter::SprintStop()
 {
-	FVector ScreenCenterInWorldSpace, WorldDirection;
-	FVector2D ViewportSize;
-	
-	UGameViewportClient* GameViewportClient = GetWorld()->GetGameViewport();
-	GameViewportClient->GetViewportSize(ViewportSize);
+	ActionComponent->StopActionByName(this, "Sprint");
+}
 
-	APlayerController* PlayerController	= Cast<APlayerController>(GetController());
-	PlayerController->DeprojectScreenPositionToWorld(ViewportSize.X * 0.5, ViewportSize.Y * 0.5, ScreenCenterInWorldSpace, WorldDirection);
-	
-	const FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	const FVector LineTraceEndLocation = ScreenCenterInWorldSpace + (GetControlRotation().Vector() * ProjectileTraceMultiplier);
+void ASCharacter::PrimaryAttack()
+{
+	ActionComponent->StartActionByName(this, "PrimaryAttack");
+}
 
-	FHitResult Hit;
-	
-	FCollisionObjectQueryParams CollisionObjectQueryParams;
-	CollisionObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	CollisionObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-
-	const bool bHasLineTraceHittedSomething = GetWorld()->LineTraceSingleByObjectType(Hit, HandLocation, LineTraceEndLocation, CollisionObjectQueryParams);
-	//DrawDebugLine(GetWorld(), HandLocation, LineTraceEndLocation, FColor::Red, false, 5.f, 0, 2.f);
-
-	FVector HitLocation = LineTraceEndLocation;
-
-	if (bHasLineTraceHittedSomething)
-	{
-		HitLocation = Hit.ImpactPoint;
-	}
-	
-	const FRotator SpawnRotation = FRotationMatrix::MakeFromX(HitLocation - HandLocation).Rotator();
-
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParameters.Instigator = this;
-
-	if (ensureAlways(ProjectileClass))
-	{
-		GetWorld()->SpawnActor<AActor>(ProjectileClass, FTransform(SpawnRotation, HandLocation), SpawnParameters);
-	}
+void ASCharacter::SecondaryAttack()
+{
+	ActionComponent->StartActionByName(this, "SecondaryAttack");
 }
 
 void ASCharacter::OnHealthChanged(AActor* ActorInstigator, USAttributeComponent* OwningComponent, float NewHealth, float Delta)

@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "SAttributeComponent.h"
+#include "SGameplayFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -73,7 +74,10 @@ void ASAICharacter::SetTargetActor(AActor* EnemyActor)
 		
 		BlackboardComponent->SetValueAsObject("TargetActor", EnemyActor);
 
-		DrawDebugString(GetWorld(), EnemyActor->GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.f, true);
+		if (CVarDrawDebug.GetValueOnGameThread())
+		{
+			DrawDebugString(GetWorld(), EnemyActor->GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.f, true);
+		}
 	}
 }
 

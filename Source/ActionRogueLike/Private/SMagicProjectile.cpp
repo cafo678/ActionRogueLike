@@ -55,18 +55,6 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		/*USAttributeComponent* OtherAttributeComponent = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
-
-		if (OtherAttributeComponent)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation(), GetActorRotation(),
-				1.f, 1.f, 0.f, GenericAttenuation);
-			
-			OtherAttributeComponent->ApplyHealthChange(GetInstigator(), DeltaDamage);
-
-			Destroy();
-		}*/
-
 		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DeltaDamage, SweepResult))
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation(), GetActorRotation(),

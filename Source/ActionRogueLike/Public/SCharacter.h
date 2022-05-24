@@ -10,32 +10,13 @@ class USpringArmComponent;
 class UCameraComponent;
 class USInteractionComponent;
 class USAttributeComponent;
+class USActionComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 	
-protected:
-	UPROPERTY(EditAnywhere, Category = Attack)
-	TSubclassOf<AActor> PrimaryProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = Attack)
-	TSubclassOf<AActor> SecondaryProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = Attack)
-	UAnimMontage* AttackMontage;
-
-	UPROPERTY(EditAnywhere, Category = Attack)
-	float PrimaryAttackTimerDelay;
-
-	UPROPERTY(EditAnywhere, Category = Attack)
-	float SecondaryAttackTimerDelay;
-
-	UPROPERTY(EditAnywhere, Category = Attack)
-	float ProjectileTraceMultiplier;
-
-	FTimerHandle AttackTimerHandle;
 public:
 	ASCharacter();
 
@@ -63,17 +44,24 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComponent = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USActionComponent* ActionComponent = nullptr;
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+
+	void SprintStart();
+	void SprintStop();
 	
-	void SpawnProjectile(UAnimMontage* AnimMontageToPlay, float AttackTimerDelay, TSubclassOf<AActor> ProjectileClass);
+	void PrimaryAttack();
+	void SecondaryAttack();
+	
 	void PrimaryInteract();
 	
-	void OnAttackTimerElapsed(TSubclassOf<AActor> ProjectileClass);
-
 	UFUNCTION()
 	void OnHealthChanged(AActor* ActorInstigator, USAttributeComponent* OwningComponent, float NewHealth, float Delta);
 
+public:
 	virtual FVector GetPawnViewLocation() const override;
 };
 
