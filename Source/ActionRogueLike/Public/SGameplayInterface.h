@@ -25,5 +25,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Interact(bool bCanInteract, APawn* InstigatorPawn);
 
-	virtual bool GetIsInteractable() = 0;
+	UFUNCTION(BlueprintImplementableEvent)
+	bool GetIsInteractable();
 };

@@ -29,8 +29,3 @@ void ASInteractableItem::Interact_Implementation(bool bCanInteract, APawn* Insti
 	}
 }
 
-bool ASInteractableItem::GetIsInteractable()
-{
-	return bIsInteractable;
-}
-

@@ -35,6 +35,4 @@ public:
 
 private:
 	FTimerHandle CooldownTimerHandle;
-
-	virtual bool GetIsInteractable() override;
 };

@@ -25,7 +25,12 @@ protected:
 	USAttributeComponent* AttributeComponent = nullptr;
 
 	virtual void PostInitializeComponents() override;
+
+	UFUNCTION()
+	void OnHealthChanged(AActor* ActorInstigator, USAttributeComponent* OwningComponent, float NewHealth, float Delta);
 	
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
+
+	void SetTargetActor(AActor* EnemyActor);
 };

@@ -32,8 +32,3 @@ void ASItemChest::Interact_Implementation(bool bCanInteract, APawn* InstigatorPa
 {
 }
 
-bool ASItemChest::GetIsInteractable()
-{
-	return bIsInteractable;
-}
-

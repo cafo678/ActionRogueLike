@@ -42,7 +42,12 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
-	
+
+public:	
+	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+protected:
 	UPROPERTY()
 	UCharacterMovementComponent* CharacterMovementComponent = nullptr;
 	
@@ -69,9 +74,7 @@ protected:
 	UFUNCTION()
 	void OnHealthChanged(AActor* ActorInstigator, USAttributeComponent* OwningComponent, float NewHealth, float Delta);
 
-public:	
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual FVector GetPawnViewLocation() const override;
 };
 
 

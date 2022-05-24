@@ -36,6 +36,4 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void Interact_Implementation(bool bCanInteract, APawn* InstigatorPawn) override;
-
-	virtual bool GetIsInteractable() override;
 };

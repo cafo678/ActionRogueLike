@@ -5,8 +5,11 @@
 
 #include "EngineUtils.h"
 #include "SAttributeComponent.h"
+#include "SCharacter.h"
 #include "AI/SAICharacter.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
+
+static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning bots via timer"), ECVF_Cheat);
 
 void ASGameMode::StartPlay()
 {
@@ -17,12 +20,18 @@ void ASGameMode::StartPlay()
 
 void ASGameMode::OnSpawnBotTimerElapsed()
 {
+	if (!CVarSpawnBots.GetValueOnGameThread())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Bot Spawning Disabled by CVar"));
+		return;
+	}
+	
 	int32 NumOfAliveBots = 0;
 	for (TActorIterator<ASAICharacter> It(GetWorld()); It; ++It)
 	{
 		ASAICharacter* Bot = *It;
 
-		USAttributeComponent* AttributeComponent = Cast<USAttributeComponent>(Bot->GetComponentByClass(USAttributeComponent::StaticClass()));
+		USAttributeComponent* AttributeComponent = USAttributeComponent::GetAttributeComponent(Bot);
 		if (AttributeComponent->IsAlive())
 		{
 			NumOfAliveBots++;
@@ -66,5 +75,29 @@ void ASGameMode::OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper* Que
 	if (SpawnLocations.Num() > 0)
 	{
 		GetWorld()->SpawnActor<AActor>(BotClass, SpawnLocations[0], FRotator::ZeroRotator, Params);
+	}
+}
+
+void ASGameMode::OnActorKilled(AActor* KilledActor, AActor* Killer)
+{
+	ASCharacter* Player = Cast<ASCharacter>(KilledActor);
+	if (Player)
+	{
+		FTimerHandle RespawnTimerHandle;
+		FTimerDelegate TimerDelegate;
+		
+		TimerDelegate.BindUFunction(this, "RespawnPlayerElapsed", Player->GetController());
+		
+		GetWorldTimerManager().SetTimer(RespawnTimerHandle, TimerDelegate, PlayerRespawnTime, false);
+	}
+}
+
+void ASGameMode::RespawnPlayerElapsed(AController* Controller)
+{
+	if (ensure(Controller))
+	{
+		Controller->UnPossess();
+		
+		RestartPlayer(Controller);
 	}
 }

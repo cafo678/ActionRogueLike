@@ -29,7 +29,7 @@ EBTNodeResult::Type USBTTaskNode_Heal::ExecuteTask(UBehaviorTreeComponent& Owner
 			return EBTNodeResult::Failed;
 		}
 
-		AIAttributeComponent->ApplyHealthChange(HealDelta);
+		AIAttributeComponent->ApplyHealthChange(AIController, HealDelta);
 		
 		return EBTNodeResult::Succeeded;
 	}

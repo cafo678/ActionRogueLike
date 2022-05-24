@@ -29,15 +29,24 @@ protected:
 	TSubclassOf<USHealthChangeWidget> HealthChangeWidgetClass = nullptr;
 
 public:
+	UPROPERTY(BlueprintAssignable, Category = "Attributes")
+	FOnHealthChanged OnHealthChanged;
+	
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool IsAlive() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
-	bool ApplyHealthChange(float Delta);
+	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
 
 	float GetCurrentHealth() const { return Health; }
 	float GetMaxHealth() const { return MaxHealth; }
-	
-	UPROPERTY(BlueprintAssignable, Category = "Attributes")
-	FOnHealthChanged OnHealthChanged;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static USAttributeComponent* GetAttributeComponent(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static bool IsActorAlive(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool Kill(AActor* InstigatorActor);
 };

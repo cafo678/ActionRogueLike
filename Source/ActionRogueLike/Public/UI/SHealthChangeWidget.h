@@ -6,9 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "SHealthChangeWidget.generated.h"
 
-/**
- * 
- */
+class USizeBox;
+
 UCLASS()
 class ACTIONROGUELIKE_API USHealthChangeWidget : public UUserWidget
 {
@@ -20,9 +19,14 @@ public:
 	void SetHealthChange(float Delta) { HealthChange = Delta; }
 	
 protected:
+	UPROPERTY(meta = (BindWidget))
+	USizeBox* ParentSizeBox = nullptr;
+	
 	UPROPERTY(BlueprintReadOnly, Category = "UI")
 	AActor* ActorToAttach = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = "UI")
 	float HealthChange;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 };

@@ -15,6 +15,9 @@ class ACTIONROGUELIKE_API USBTTaskNode_RangedAttack : public UBTTaskNode
 protected:
 	UPROPERTY(EditAnywhere, Category = AI)
 	TSubclassOf<ASMagicProjectile> ProjectileClass = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = AI)
+	float MaxBulletSpread = 2.f;
 	
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	

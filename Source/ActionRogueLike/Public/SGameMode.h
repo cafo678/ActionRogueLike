@@ -39,4 +39,15 @@ private:
 
 	UFUNCTION()
 	void OnSpawnBotQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+public:
+	virtual void OnActorKilled(AActor* KilledActor, AActor* Killer);
+	
+protected:
+	UFUNCTION()
+	void RespawnPlayerElapsed(AController* Controller);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float PlayerRespawnTime = 2.f;
+	
 };
